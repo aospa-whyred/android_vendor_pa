@@ -181,14 +181,6 @@ echo -e ""
 # Build away!
 echo -e "${CLR_BLD_BLU}Starting compilation${CLR_RST}"
 echo -e ""
-
-# If we aren't in Jenkins, use the engineering tag
-if [ -z "${BUILD_NUMBER}" ]; then
-    export FILE_NAME_TAG=eng.$USER
-else
-    export FILE_NAME_TAG=$BUILD_NUMBER
-fi
-
 # Build a specific module
 if [ "${MODULE}" ]; then
     m $MODULE"$CMD"
@@ -199,6 +191,13 @@ elif [ "${KEY_MAPPINGS}" ]; then
     # Set sign key password file if specified
     if [ "${PWFILE}" ]; then
         export ANDROID_PW_FILE=$PWFILE
+    fi
+
+    # If we aren't in Jenkins, use the engineering tag
+    if [ -z "${BUILD_NUMBER}" ]; then
+        export FILE_NAME_TAG=eng.$USER
+    else
+        export FILE_NAME_TAG=$BUILD_NUMBER
     fi
 
     # Make package for distribution
@@ -233,7 +232,6 @@ elif [ "${KEY_MAPPINGS}" ]; then
             pa-$PA_VERSION-delta.zip
         checkExit
     fi
-
     if [ "$FLAG_IMG_ZIP" = 'y' ]; then
         img_from_target_files \
             pa-$PA_VERSION-signed-target_files-$FILE_NAME_TAG.zip \
@@ -241,20 +239,12 @@ elif [ "${KEY_MAPPINGS}" ]; then
         checkExit
     fi
 # Build rom package
-elif [ "$FLAG_IMG_ZIP" = 'y' ]; then
-    m updatepackage otapackage"$CMD"
-
-    checkExit
-
-    cp -f $OUT/pa_$DEVICE-ota-$FILE_NAME_TAG.zip $OUT/pa-$PA_VERSION.zip
-    cp -f $OUT/pa_$DEVICE-img-$FILE_NAME_TAG.zip $OUT/pa-$PA_VERSION-image.zip
-
 else
-    m otapackage"$CMD"
+    m bacon"$CMD"
 
     checkExit
 
-    cp -f $OUT/pa_$DEVICE-ota-$FILE_NAME_TAG.zip $OUT/pa-$PA_VERSION.zip
+    ln -sf $OUT/pa-${PA_VERSION}.zip $DIR_ROOT
 fi
 echo -e ""
 
